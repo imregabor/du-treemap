@@ -9,90 +9,13 @@ import * as d3 from 'd3';
 // du --apparent-size -b | grep -v './.git' > du-output.txt
 import data from '../data/du-output.txt'
 
-function loaded() {
-
-  console.log(`data size: ${data.length}`);
-  const tree = {
-    name : '.',
-    children: [],
-    childMap: {},
-    size : 0,
-    sizeSi : 0
-  };
-
-  data.trim().split('\n').forEach(line => {
-    const match = line.match(/^(\d+)\s+(.+)$/);
-    if (!match) return;
-
-    const size = parseInt(match[1], 10);
-    const pathElements = match[2].split('/');
-
-    var tn = tree;
-    for (var i = 1; i < pathElements.length; i++) {
-      const pe = pathElements[i];
-      if (!tn.childMap[pe]) {
-        const newChild = {
-          name : pe,
-          children : [],
-          childMap : {},
-          size : 0,
-          sizeSi : 0
-        };
-        tn.childMap[pe] = newChild;
-        tn.children.push(newChild)
-      }
-      tn = tn.childMap[pe];
-    }
-    tn.size = size; // du uses kB by default, instruct it with -b to use bytes
-    tn.sizeSi = formatSi(tn.size);
-  });
-  console.log('Directory size tree', tree);
-
-  // filter for max 2 levels
-  function traverse(renderSize, minRenderSize, descends, fromRoot) {
-    const toRoot = {
-      name : fromRoot.name,
-      children : [],
-      size : fromRoot.size
-    };
-    if (descends > 0) {
-      var unrenderedSize = 0;
-      var unrenderedCount = 0;
-      var renderedCount = 0;
-      for (var child of fromRoot.children) {
-        const childRenderSize = renderSize * child.size / fromRoot.size;
-
-        if (childRenderSize < minRenderSize) {
-           unrenderedSize = unrenderedSize + child.size;
-           unrenderedCount = unrenderedCount + 1;
-        } else {
-          const newChild = traverse(childRenderSize, minRenderSize, descends-1, child, newChild);
-          toRoot.children.push(newChild);
-          renderedCount = renderedCount + 1;
-        }
-      }
-      if (unrenderedCount > 0 && renderedCount > 0) {
-        toRoot.children.push({
-          name : `... (${unrenderedCount} more)`,
-          size : unrenderedSize,
-          children : [],
-          unrenderedPlaceholder : true
-        });
-      }
-    }
-    return toRoot;
-  }
-  const filtered_tree = traverse(1000000, 50, 5, tree);
-
-
-
-
+function simple_treemap(filtered_tree) {
   // based on https://observablehq.com/@d3/treemap/2
   const width = window.innerWidth; // 1154;
   const height = window.innerHeight; //  1154;
 
   // Specify the color scale.
-  const color = d3.scaleOrdinal(tree.children.map(d => d.name), d3.schemeTableau10);
+  const color = d3.scaleOrdinal(filtered_tree.children.map(d => d.name), d3.schemeTableau10);
 
   const tiling = d3.treemapSquarify; // d3.treemapBinary d3.treemapSquarify d3.treemapSliceDice d3.treemapSlice d3.treemapDice
 
@@ -168,7 +91,82 @@ function loaded() {
       .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
       .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.6 : null)
       .text(d => d);
+}
 
+function loaded() {
+  console.log(`data size: ${data.length}`);
+  const tree = {
+    name : '.',
+    children: [],
+    childMap: {},
+    size : 0,
+    sizeSi : 0
+  };
+
+  data.trim().split('\n').forEach(line => {
+    const match = line.match(/^(\d+)\s+(.+)$/);
+    if (!match) return;
+
+    const size = parseInt(match[1], 10);
+    const pathElements = match[2].split('/');
+
+    var tn = tree;
+    for (var i = 1; i < pathElements.length; i++) {
+      const pe = pathElements[i];
+      if (!tn.childMap[pe]) {
+        const newChild = {
+          name : pe,
+          children : [],
+          childMap : {},
+          size : 0,
+          sizeSi : 0
+        };
+        tn.childMap[pe] = newChild;
+        tn.children.push(newChild)
+      }
+      tn = tn.childMap[pe];
+    }
+    tn.size = size; // du uses kB by default, instruct it with -b to use bytes
+    tn.sizeSi = formatSi(tn.size);
+  });
+  console.log('Directory size tree', tree);
+
+  // filter for max 2 levels
+  function traverse(renderSize, minRenderSize, descends, fromRoot) {
+    const toRoot = {
+      name : fromRoot.name,
+      children : [],
+      size : fromRoot.size
+    };
+    if (descends > 0) {
+      var unrenderedSize = 0;
+      var unrenderedCount = 0;
+      var renderedCount = 0;
+      for (var child of fromRoot.children) {
+        const childRenderSize = renderSize * child.size / fromRoot.size;
+
+        if (childRenderSize < minRenderSize) {
+           unrenderedSize = unrenderedSize + child.size;
+           unrenderedCount = unrenderedCount + 1;
+        } else {
+          const newChild = traverse(childRenderSize, minRenderSize, descends-1, child, newChild);
+          toRoot.children.push(newChild);
+          renderedCount = renderedCount + 1;
+        }
+      }
+      if (unrenderedCount > 0 && renderedCount > 0) {
+        toRoot.children.push({
+          name : `... (${unrenderedCount} more)`,
+          size : unrenderedSize,
+          children : [],
+          unrenderedPlaceholder : true
+        });
+      }
+    }
+    return toRoot;
+  }
+  const filtered_tree = traverse(1000000, 50, 5, tree);
+  simple_treemap(filtered_tree);
 }
 
 function formatSi(bytes, decimals = 2) {
@@ -184,6 +182,5 @@ function formatSi(bytes, decimals = 2) {
 
   return `${bytes.toFixed(decimals)} ${units[unitIndex]}`;
 }
-
 
 document.addEventListener('DOMContentLoaded', loaded);
