@@ -9,10 +9,136 @@ import * as d3 from 'd3';
 // du --apparent-size -b | grep -v './.git' > du-output.txt
 import data from '../data/du-output.txt'
 
+// Examples use ObservableHQs uid(....)
+// limits: return is not a function, href is relative
+var idCt = 0;
+function newId(prefix) {
+  prefix = !!prefix ? prefix : 'seq-id'
+  const ret = {
+    id : `${prefix}-${idCt}`,
+    href : `#${prefix}-${idCt}`
+  };
+  idCt = idCt + 1;
+  return ret;
+}
+
+
+function hierarchical_treemap(tree) {
+  // based on https://observablehq.com/@d3/nested-treemap
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  // Specify the color scale.
+  // const color = d3.scaleOrdinal(tree.children.map(d => d.name), d3.schemeTableau10).unknown('#fff');
+
+
+
+  const tiling = d3.treemapSquarify; // d3.treemapBinary d3.treemapSquarify d3.treemapSliceDice d3.treemapSlice d3.treemapDice
+
+   // Compute the layout.
+  const root = d3.treemap()
+    .tile(tiling)
+    .size([width, height])
+    .paddingOuter(6)
+    .paddingTop(19)
+    .paddingInner(2)
+    .round(true)
+  (d3.hierarchy(tree)
+      .sum(d => !!d.children.length ? 0 : d.size)
+      .sort((a, b) => {
+           if (a.data.unrenderedPlaceholder || a.data.unrenderedPlaceholder) {
+            return (a.data.unrenderedPlaceholder ? 1 : 0) - (b.data.unrenderedPlaceholder ? 1 : 0); // reversed, unrendered placeholders to the end
+           } else {
+            return b.value - a.value;
+           }
+      })); // called on node, not on data
+
+  // find meaningful height of root (max depth meaningful node)
+  var maxDepth = 0;
+  root.each(n => {
+    if (Math.abs(n.x1 - n.x0) > 0 && Math.abs(n.y1 - n.y0) > 0 && n.depth > maxDepth) {
+      console.log(n)
+      maxDepth = n.depth;
+    }
+  });
+  console.log('Max meaningful depth', maxDepth);
+
+
+  const color = d3.scaleSequential([-maxDepth * 1.5, maxDepth], d3.interpolateMagma);
+
+  // Create the SVG container.
+  const svg = d3.select('body').append("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .attr("width", width)
+      .attr("height", height)
+      .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
+
+  const shadow = newId("shadow");
+  svg.append("filter")
+      .attr("id", shadow.id)
+    .append("feDropShadow")
+      .attr("flood-opacity", 0.4)
+      .attr("dx", 3)
+      .attr("dx", 3)
+      .attr("stdDeviation", 5);
+
+  // level order grouping of nodes
+  // sort to ensure that subsequent svg layers are in order
+  const entiresByLevel = Array.from(d3.group(root, d => d.depth)).sort((a, b) => a[0] - b[0]);
+
+  const node = svg.selectAll("g")
+    .data(entiresByLevel) // iterable of [ <tree depth>, [ <level traversal of all nodes> ]] due to grouping
+    .join("g") // per-depth level layers; each layer will have their respective nodes across all paths
+      .attr("filter", `url(${shadow.href})`)
+    .selectAll("g")
+    .data(d => d[1]) // level order traversals
+    .join("g")
+      .attr("transform", d => `translate(${d.x0},${d.y0})`);
+
+  // note that per-depth level layer g's are not part of the node selection
+
+  // Append a tooltip.
+  const format = d3.format(",d");
+  node.append("title")
+      .text(d => `${d.ancestors().reverse().map(d => d.data.name).join("/")}\n${formatSi(d.value)} (${format(d.value)})`);
+
+  node.append("rect")
+      .attr("id", d => (d.nodeId = newId("node")).id)
+      .attr("fill", d => color(d.depth))
+      // .attr("fill", d => { while (d.depth > 1) d = d.parent; return color(d.data.name); })
+      .attr("fill-opacity", d => d.data.unrenderedPlaceholder ? 0.6 : 1)
+      .attr("width", d => d.w = d.x1 - d.x0)
+      .attr("height", d => d.h = d.y1 - d.y0);
+
+  const textedNode = node.filter(d => d.w > 15 && d.h > 10);
+  textedNode.append("clipPath")
+      .attr("id", d => (d.clipId = newId("clip")).id)
+    .append("use")
+      .attr("xlink:href", d => d.nodeId.href);
+
+  textedNode.append("text")
+      .attr("clip-path", d => `url(${d.clipId.href})`)
+    .selectAll("tspan")
+    .data(d => [ d.data.name, formatSi(d.value) ])
+    .join("tspan")
+      .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
+      .text(d => d);
+
+  textedNode.filter(d => d.children).selectAll("tspan")
+      .attr("dx", 3)
+      .attr("y", 13);
+
+  textedNode.filter(d => !d.children).selectAll("tspan")
+      .attr("x", 3)
+      .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`);
+
+  return svg.node();
+}
+
 function simple_treemap(filtered_tree) {
   // based on https://observablehq.com/@d3/treemap/2
-  const width = window.innerWidth; // 1154;
-  const height = window.innerHeight; //  1154;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
   // Specify the color scale.
   const color = d3.scaleOrdinal(filtered_tree.children.map(d => d.name), d3.schemeTableau10);
@@ -53,19 +179,6 @@ function simple_treemap(filtered_tree) {
   const format = d3.format(",d");
   leaf.append("title")
       .text(d => `${d.ancestors().reverse().map(d => d.data.name).join("/")}\n${formatSi(d.value)} (${format(d.value)})`);
-
-  // Example used ObservableHQs uid(....)
-  // limits: return is not a function, href is relative
-  var idCt = 0;
-  function newId(prefix) {
-    prefix = !!prefix ? prefix : 'seq-id'
-    const ret = {
-      id : `${prefix}-${idCt}`,
-      href : `#${prefix}-${idCt}`
-    };
-    idCt = idCt + 1;
-    return ret;
-  }
 
   // Append a color rectangle.
   leaf.append("rect")
@@ -165,8 +278,13 @@ function loaded() {
     }
     return toRoot;
   }
-  const filtered_tree = traverse(1000000, 50, 5, tree);
-  simple_treemap(filtered_tree);
+  const filtered_tree = traverse(1000000, 100, 8, tree);
+  console.log('Filtered tree', tree);
+
+  // simple_treemap(filtered_tree);
+  hierarchical_treemap(filtered_tree);
+
+
 }
 
 function formatSi(bytes, decimals = 2) {
