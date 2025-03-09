@@ -13,7 +13,7 @@ export function init() {
   const u = body.append('div').style('width', '100%').style('height', '20px').classed('pp', true);
   const l = body.append('div').style('width', '100%').style('top', '20px').style('height', `${height - 20}px`).classed('pp', true);
 
-  u.append('span').classed('uh-title', true).text('du-treemap');
+  u.append('div').classed('uh-title', true).text('du-treemap');
 
 
   const ret = {
@@ -21,11 +21,26 @@ export function init() {
     getLowerHeight : () => height - 20,
     getLowerD3 : () => l,
     addLink : (label, onClick) => {
-      u.append('span').classed('uh-link', true).text(label).on('click', onClick)
-      return ret;
+      const linkSpan = u.append('div').classed('uh-link', true).text(label);
+      linkSpan.on('click', () => {
+        if (linkSpan.classed('uh-link-selected')) {
+          return;
+        }
+        onClick();
+      });
+
+      return {
+        selected : selected => {
+          linkSpan.classed('uh-link-selected', !!selected);
+        }
+      };
     },
     clearLower: () => {
       l.selectAll('*').remove();
+      return ret;
+    },
+    clearLinkSelections: () => {
+      u.selectAll('.uh-link').classed('uh-link-selected', false);
       return ret;
     }
 

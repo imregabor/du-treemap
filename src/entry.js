@@ -205,14 +205,19 @@ function simple_treemap(filtered_tree, parentD3, width, height) {
 
 function loaded() {
   const p = page.init();
-  p.addLink('Flat', () => {
+  const link_flat = p.addLink('Flat', () => {
     p.clearLower();
+    p.clearLinkSelections();
     simple_treemap(filtered_tree, p.getLowerD3(), p.getLowerWidth(), p.getLowerHeight());
+    link_flat.selected(true);
   });
-  p.addLink('Hierarchical', () => {
+  const link_hierarchical = p.addLink('Hierarchical', () => {
     p.clearLower();
+    p.clearLinkSelections();
     hierarchical_treemap(filtered_tree, p.getLowerD3(), p.getLowerWidth(), p.getLowerHeight());
+    link_hierarchical.selected(true);
   });
+  link_hierarchical.selected(true);
 
   console.log(`data size: ${data.length}`);
   const tree = {
