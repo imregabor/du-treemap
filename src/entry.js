@@ -8,6 +8,7 @@ import * as d3 from 'd3';
 // Sample data: checked out Python git repo
 // du --apparent-size -b | grep -v './.git' > du-output.txt
 import data from '../data/du-output.txt'
+import * as page from './page.js'
 
 // Examples use ObservableHQs uid(....)
 // limits: return is not a function, href is relative
@@ -23,10 +24,8 @@ function newId(prefix) {
 }
 
 
-function hierarchical_treemap(tree) {
+function hierarchical_treemap(tree, parentD3, width, height) {
   // based on https://observablehq.com/@d3/nested-treemap
-  const width = window.innerWidth;
-  const height = window.innerHeight;
 
   // Specify the color scale.
   // const color = d3.scaleOrdinal(tree.children.map(d => d.name), d3.schemeTableau10).unknown('#fff');
@@ -67,7 +66,7 @@ function hierarchical_treemap(tree) {
   const color = d3.scaleSequential([-maxDepth * 1.5, maxDepth], d3.interpolateMagma);
 
   // Create the SVG container.
-  const svg = d3.select('body').append("svg")
+  const svg = parentD3.append("svg")
       .attr("viewBox", [0, 0, width, height])
       .attr("width", width)
       .attr("height", height)
@@ -135,10 +134,8 @@ function hierarchical_treemap(tree) {
   return svg.node();
 }
 
-function simple_treemap(filtered_tree) {
+function simple_treemap(filtered_tree, parentD3, width, height) {
   // based on https://observablehq.com/@d3/treemap/2
-  const width = window.innerWidth;
-  const height = window.innerHeight;
 
   // Specify the color scale.
   const color = d3.scaleOrdinal(filtered_tree.children.map(d => d.name), d3.schemeTableau10);
@@ -163,7 +160,7 @@ function simple_treemap(filtered_tree) {
 
 
    // Create the SVG container.
-  const svg = d3.select('body').append("svg")
+  const svg = parentD3.append("svg")
       .attr("viewBox", [0, 0, width, height])
       .attr("width", width)
       .attr("height", height)
@@ -207,6 +204,16 @@ function simple_treemap(filtered_tree) {
 }
 
 function loaded() {
+  const p = page.init();
+  p.addLink('Flat', () => {
+    p.clearLower();
+    simple_treemap(filtered_tree, p.getLowerD3(), p.getLowerWidth(), p.getLowerHeight());
+  });
+  p.addLink('Hierarchical', () => {
+    p.clearLower();
+    hierarchical_treemap(filtered_tree, p.getLowerD3(), p.getLowerWidth(), p.getLowerHeight());
+  });
+
   console.log(`data size: ${data.length}`);
   const tree = {
     name : '.',
@@ -282,9 +289,7 @@ function loaded() {
   console.log('Filtered tree', tree);
 
   // simple_treemap(filtered_tree);
-  hierarchical_treemap(filtered_tree);
-
-
+  hierarchical_treemap(filtered_tree, p.getLowerD3(), p.getLowerWidth(), p.getLowerHeight());
 }
 
 function formatSi(bytes, decimals = 2) {

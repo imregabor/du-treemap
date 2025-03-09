@@ -1,6 +1,3 @@
-// const path = require('path');
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
-
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -11,7 +8,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
-//module.exports = {
 export default {
   entry: './src/entry.js',
   devtool: 'source-map',
@@ -19,9 +15,8 @@ export default {
     /*
     new CopyWebpackPlugin({
       patterns: [
-        // see https://stackoverflow.com/questions/37298215/add-favicon-with-react-and-webpack
         {
-          from: './src/favicon.png'
+          context : 'src', from: '*.ttf'
         },
       ]
     }),

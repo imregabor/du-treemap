@@ -1,0 +1,59 @@
+@font-face {
+  font-family: roboto;
+  src: url('Roboto-Regular.ttf');
+}
+
+@font-face {
+  font-family: roboto;
+  src: url('Roboto-Bold.ttf');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: roboto-condensed;
+  src: url('RobotoCondensed-Regular.ttf');
+}
+
+@font-face {
+  font-family: sofia-sans-extra-condensed;
+  src: url('SofiaSansExtraCondensed-Regular.ttf');
+}
+
+
+body {
+  font-family: sofia-sans-extra-condensed;
+  margin: 0;
+}
+
+.uh-title {
+  color: #666;
+  font-family: roboto;
+  font-weight: bold;
+  margin-right: 20px;
+}
+
+.uh-link {
+  color: #888;
+  font-family: roboto;
+  margin-right: 10px;
+  cursor: pointer;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.uh-link:hover {
+  color: #444;
+}
+
+.uh-link:active {
+  color: #ccc;
+  background-color: #666;
+  border-color: #666;
+  border-width: 1px;
+  border-radius: 2px;
+}
+
+.pp {
+  position: fixed;
+  user-select: none;
+}
