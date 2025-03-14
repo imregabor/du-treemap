@@ -1,12 +1,22 @@
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+import HtmlWebpackInlineSourcePlugin from '@effortlessmotion/html-webpack-inline-source-plugin';
 
 // see https://iamwebwiz.medium.com/how-to-fix-dirname-is-not-defined-in-es-module-scope-34d94a86694d
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
+
+
+const isInline = process.env.INLINE_BUILD === 'true';
+const faviconPath = path.resolve(__dirname, 'src/favicon.png');
+const faviconBase64 = fs.existsSync(faviconPath)
+  ? `data:image/png;base64,${fs.readFileSync(faviconPath).toString('base64')}`
+  : '';
+
 
 export default {
   entry: './src/entry.js',
@@ -25,19 +35,43 @@ export default {
       // see https://gauger.io/fonticon/
       // and https://stackoverflow.com/questions/37298215/add-favicon-with-react-and-webpack
       filename: 'index.html',
-      favicon: './src/favicon.png',
+      favicon: isInline ? false : './src/favicon.png',
+      ...(isInline && {
+         templateContent: ({ htmlWebpackPlugin }) => `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${htmlWebpackPlugin.options.title}</title>
+            ${faviconBase64 ? `<link rel="icon" href="${faviconBase64}" type="image/png">` : ''}
+          </head>
+          <body>
+            <div id="app"></div>
+          </body>
+          </html>
+        `,
+      }),
       title: 'du vis',
       meta : {
         viewport : 'user-scalable=no, width=device-width, initial-scale=1.0',
         'apple-mobile-web-app-capable' : 'yes'
-      }
+      },
+      inject: 'body',
+      minify: isInline, // Minify if in inline mode
+      inlineSource: isInline ? '.(js|css)$' : undefined,
     }),
+    ...(isInline ? [new HtmlWebpackInlineSourcePlugin()] : []),
   ],
   module: {
     rules: [
       {
         test: /\.css$/, 
         use: [ 'style-loader', 'css-loader' ] 
+      },
+      {
+        test: /\.(ttf|woff|woff2)$/,
+        type: isInline ? 'asset/inline' : 'asset/resource',
       },
       { 
         test: /\.txt.gz$/,
@@ -56,7 +90,9 @@ export default {
     ]
   },
   output: {
-    filename: 'main.js',
+    filename: isInline ? 'bundle.js' : 'main.js',
+    // filename: 'main.js',
+     publicPath: '',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },

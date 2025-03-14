@@ -24,3 +24,11 @@ Open `dist/index.html`
 ``` bash
 du --apparent-size -b > <PROJECT_HOME>/data/du-output.txt
 ```
+
+### Inline build
+
+To emit a single self contained `index.html` launch
+
+``` bash
+INLINE_BUILD=true npm run build
+```
