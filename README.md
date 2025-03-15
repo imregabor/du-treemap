@@ -63,7 +63,7 @@ Update screenshots
 Cypress can generate screenshots linked in `README.md`:
 
 ``` bash
-npm run INLINE_BUILD
+npm run build
 npx cypress run --browser chrome --headless
 cp cypress_screenshots/screenshot.cy.js/screenshot-1.png doc/
 cp cypress_screenshots/screenshot.cy.js/screenshot-2.png doc/

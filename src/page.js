@@ -20,6 +20,10 @@ export function init() {
     getLowerWidth : () => width,
     getLowerHeight : () => height - 20,
     getLowerD3 : () => l,
+    addLabel : label => {
+      u.append('div').classed('uh-label', true).text(label);
+      return ret;
+    },
     addLink : (id, label, onClick) => {
       const linkDiv = u.append('div').attr('id', id).classed('uh-link', true).text(label);
       linkDiv.on('click', () => {
