@@ -210,13 +210,13 @@ function simple_treemap(filtered_tree, parentD3, width, height) {
 
 function loaded() {
   const p = page.init();
-  const link_flat = p.addLink('Flat', () => {
+  const link_flat = p.addLink('flat-layout', 'Flat', () => {
     p.clearLower();
     p.clearLinkSelections();
     simple_treemap(filtered_tree, p.getLowerD3(), p.getLowerWidth(), p.getLowerHeight());
     link_flat.selected(true);
   });
-  const link_hierarchical = p.addLink('Hierarchical', () => {
+  const link_hierarchical = p.addLink('hier-layout', 'Hierarchical', () => {
     p.clearLower();
     p.clearLinkSelections();
     hierarchical_treemap(filtered_tree, p.getLowerD3(), p.getLowerWidth(), p.getLowerHeight());

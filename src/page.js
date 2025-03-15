@@ -20,10 +20,10 @@ export function init() {
     getLowerWidth : () => width,
     getLowerHeight : () => height - 20,
     getLowerD3 : () => l,
-    addLink : (label, onClick) => {
-      const linkSpan = u.append('div').classed('uh-link', true).text(label);
-      linkSpan.on('click', () => {
-        if (linkSpan.classed('uh-link-selected')) {
+    addLink : (id, label, onClick) => {
+      const linkDiv = u.append('div').attr('id', id).classed('uh-link', true).text(label);
+      linkDiv.on('click', () => {
+        if (linkDiv.classed('uh-link-selected')) {
           return;
         }
         onClick();
@@ -31,7 +31,7 @@ export function init() {
 
       return {
         selected : selected => {
-          linkSpan.classed('uh-link-selected', !!selected);
+          linkDiv.classed('uh-link-selected', !!selected);
         }
       };
     },
