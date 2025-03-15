@@ -3,7 +3,10 @@ du-treemap
 
 Visualize output from a `du` output.
 
-![screenshot](doc/screenshot.png)
+![hierarchic layout](doc/screenshot-1.png)
+
+![flat layout](doc/screenshot-2.png)
+
 
 Getting started
 ---------------
@@ -51,4 +54,17 @@ Inline build can also use custom data:
 
 ``` bash
 DATA_FILE=<PATH_TO_DU_OUTPUT_TXT> INLINE_BUILD=true npm run build
+```
+
+
+Update screenshots
+------------------
+
+Cypress can generate screenshots linked in `README.md`:
+
+``` bash
+npm run INLINE_BUILD
+npx cypress run --browser chrome --headless
+cp cypress_screenshots/screenshot.cy.js/screenshot-1.png doc/
+cp cypress_screenshots/screenshot.cy.js/screenshot-2.png doc/
 ```
