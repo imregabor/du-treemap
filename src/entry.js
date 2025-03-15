@@ -7,8 +7,13 @@ import * as d3 from 'd3';
 
 // Sample data: checked out Python git repo
 // du --apparent-size -b | grep -v './.git' > du-output.txt
-import data from '../data/du-output.txt'
+import default_data from '../data/du-output.txt'
 import * as page from './page.js'
+
+
+let custom_data = __custom_data__; // webpack define plugin will substitute to null or String literal with inline content
+var data = custom_data ? custom_data : default_data;
+
 
 // Examples use ObservableHQs uid(....)
 // limits: return is not a function, href is relative

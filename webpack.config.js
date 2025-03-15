@@ -1,3 +1,4 @@
+import webpack from 'webpack';
 import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -12,11 +13,22 @@ const __dirname = path.dirname(__filename); // get the name of the directory
 
 
 const isInline = process.env.INLINE_BUILD === 'true';
+const dataFilePath = process.env.DATA_FILE || undefined
 const faviconPath = path.resolve(__dirname, 'src/favicon.png');
 const faviconBase64 = fs.existsSync(faviconPath)
   ? `data:image/png;base64,${fs.readFileSync(faviconPath).toString('base64')}`
   : '';
 
+console.log()
+console.log('==============================================================')
+console.log()
+console.log('Build customization: ')
+console.log()
+console.log(`Inline build:     ${isInline}`)
+console.log(`Custom data file: ${dataFilePath?dataFilePath:'**none**'}`)
+console.log()
+console.log('==============================================================')
+console.log()
 
 export default {
   entry: './src/entry.js',
@@ -31,6 +43,11 @@ export default {
       ]
     }),
     */
+    new webpack.DefinePlugin({
+      '__custom_data__' : dataFilePath
+        ? JSON.stringify(fs.readFileSync(path.resolve(dataFilePath), 'utf8'))
+        : 'null'
+      }),
     new HtmlWebpackPlugin({
       // see https://gauger.io/fonticon/
       // and https://stackoverflow.com/questions/37298215/add-favicon-with-react-and-webpack
