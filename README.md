@@ -36,8 +36,16 @@ du --apparent-size -b > <PATH_TO_DU_OUTPUT_TXT>
 
 ### Build
 
+Run from the project directory:
+
 ``` bash
 DATA_FILE=<PATH_TO_DU_OUTPUT_TXT> npm run build
+```
+
+Or from elsewhere:
+
+``` bash
+DATA_FILE=<PATH_TO_DU_OUTPUT_TXT> npm --prefix <PATH_TO_PROJECT_DIR> run build
 ```
 
 

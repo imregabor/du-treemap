@@ -8,11 +8,13 @@ import HtmlWebpackInlineSourcePlugin from '@effortlessmotion/html-webpack-inline
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
+const prefixPath = process.env.npm_config_prefix || '';
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
+
 const isInline = process.env.INLINE_BUILD === 'true';
-const dataFilePath = process.env.DATA_FILE || undefined
+const dataFilePath = path.resolve(process.env.INIT_CWD, process.env.DATA_FILE) || undefined
 const dataLabel =
   process.env.DATA_LABEL
   ? JSON.stringify(process.env.DATA_LABEL)
@@ -29,6 +31,8 @@ console.log('================================================================')
 console.log()
 console.log('Build customization: ')
 console.log()
+console.log(`Init work dir:                        ${process.env.INIT_CWD}`)
+console.log(`[--prefix]         Prefix path        ${prefixPath}`)
 console.log(`[env.INLINE_BUILD] Inline build:      ${isInline}`)
 console.log(`[env.DATA_FILE]    Custom data file:  ${dataFilePath ? dataFilePath : '**none**'}`)
 console.log(`[env.DATA_LABEL]   Custom data label: ${dataLabel ? dataLabel : '**none**'}`)
