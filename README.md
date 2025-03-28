@@ -22,7 +22,6 @@ npm run build
 Open `dist/index.html`
 
 
-
 Visualize custom `du` output
 ----------------------------
 
@@ -33,6 +32,24 @@ Make sure that output ends with `.txt`.
 ``` bash
 du --apparent-size -b > <PATH_TO_DU_OUTPUT_TXT>
 ```
+
+### Optionally reduce size
+
+Sample `du` output by dropping entries below specified depth to reduce size:
+
+```
+MAX_DEPTH=2
+grep -Ev '(?/.*){'$MAX_DEPTH',}/' <PATH_TO_DU_OUTPUT_TXT> > <PATH_TO_SAMPLED_OUTPUT_TXT>
+
+```
+
+Sample `du` output by dropping trees below specified size
+
+```
+MIN_SIZE_DIGITS=4 # drop subtree when size is abelow 1k
+grep -E '^[0-9]{'MIN_SIZE_DIGITS',}' <PATH_TO_DU_OUTPUT_TXT> > <PATH_TO_SAMPLED_OUTPUT_TXT>
+```
+
 
 ### Build
 
