@@ -25,6 +25,7 @@ Open `dist/index.html`
 Visualize custom `du` output
 ----------------------------
 
+
 ### Run `du`
 
 Make sure that output ends with `.txt`.
@@ -33,6 +34,7 @@ Make sure that output ends with `.txt`.
 du --apparent-size -b > <PATH_TO_DU_OUTPUT_TXT>
 ```
 
+
 ### Optionally reduce size
 
 Sample `du` output by dropping entries below specified depth to reduce size:
@@ -40,7 +42,6 @@ Sample `du` output by dropping entries below specified depth to reduce size:
 ```
 MAX_DEPTH=2
 grep -Ev '(?/.*){'$MAX_DEPTH',}/' <PATH_TO_DU_OUTPUT_TXT> > <PATH_TO_SAMPLED_OUTPUT_TXT>
-
 ```
 
 Sample `du` output by dropping trees below specified size
