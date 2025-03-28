@@ -14,7 +14,9 @@ const __dirname = path.dirname(__filename); // get the name of the directory
 
 
 const isInline = process.env.INLINE_BUILD === 'true';
-const dataFilePath = path.resolve(process.env.INIT_CWD, process.env.DATA_FILE) || undefined
+const dataFilePath = process.env.DATA_FILE
+  ? path.resolve(process.env.INIT_CWD, process.env.DATA_FILE)
+  : undefined;
 const dataLabel =
   process.env.DATA_LABEL
   ? JSON.stringify(process.env.DATA_LABEL)
